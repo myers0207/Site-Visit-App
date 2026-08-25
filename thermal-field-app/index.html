@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#12161A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Thermal Field">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="styles.css">
+<title>Thermal Field Survey</title>
+</head>
+<body>
+<div id="app">
+
+  <div class="topbar">
+    <div>
+      <span class="eyebrow">Thermal Field Survey</span>
+      <h1 id="topbar-title">Track</h1>
+    </div>
+    <div class="status-pill" id="status-pill">—</div>
+  </div>
+
+  <main>
+
+    <!-- ============ TRACK VIEW ============ -->
+    <section class="view active" id="view-track">
+
+      <div class="card">
+        <p class="section-label">Conditions at current location</p>
+        <div class="readout-row">
+          <div class="readout-box" id="temp-box"><div class="val" id="temp-val">—</div><div class="lbl">Temp</div></div>
+          <div class="readout-box" id="humidity-box"><div class="val" id="humidity-val">—</div><div class="lbl">Humidity</div></div>
+        </div>
+        <div class="weather-meta" id="weather-meta">Not yet fetched</div>
+        <div class="btn-row" style="margin-top:12px;">
+          <button class="btn btn-secondary" id="btn-refresh-weather">Refresh conditions</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="section-label">GPS track</p>
+        <div class="gps-mini" style="margin-bottom:12px;">
+          <div class="dot" id="track-gps-dot"></div>
+          <span id="track-gps-text">No fix yet</span>
+        </div>
+
+        <div class="track-stats">
+          <div class="readout-box"><div class="val" id="stat-distance">0.00<span class="unit"> km</span></div><div class="lbl">Distance</div></div>
+          <div class="readout-box"><div class="val" id="stat-duration">00:00</div><div class="lbl">Duration</div></div>
+          <div class="readout-box"><div class="val" id="stat-pace">—</div><div class="lbl">Pace /km</div></div>
+        </div>
+
+        <div class="track-path-wrap">
+          <div class="track-empty" id="track-empty-msg">Path will plot here once recording starts</div>
+          <svg id="track-svg" viewBox="0 0 300 225" style="display:none;">
+            <polyline id="track-polyline" fill="none" stroke="#38A3A5" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+            <circle id="track-start-dot" r="5" fill="#6FAE8C"/>
+            <circle id="track-end-dot" r="5" fill="#D9642F"/>
+          </svg>
+        </div>
+
+        <button class="btn record-btn idle" id="btn-record">Start Recording</button>
+        <div class="record-sub-row" id="record-sub-row" style="display:none;">
+          <button class="btn btn-secondary" id="btn-pause-resume">Pause</button>
+          <button class="btn btn-danger" id="btn-stop-track">Stop &amp; Save</button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============ SURVEY VIEW ============ -->
+    <section class="view" id="view-survey">
+      <div class="card">
+        <p class="section-label">Current location</p>
+        <div class="gps-mini">
+          <div class="dot" id="survey-gps-dot"></div>
+          <span id="survey-gps-text">No fix yet</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="section-label">How does the thermal environment feel right now?</p>
+        <div class="survey-grid" id="survey-grid"></div>
+      </div>
+    </section>
+
+    <!-- ============ NOTES VIEW ============ -->
+    <section class="view" id="view-notes">
+      <div class="card">
+        <p class="section-label">Location</p>
+        <div class="gps-mini">
+          <div class="dot" id="notes-gps-dot"></div>
+          <span id="notes-gps-text">No fix yet</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="section-label">Field observation</p>
+        <label>Notes</label>
+        <textarea id="f-notes" placeholder="Describe what you're observing — shade conditions, surface type, wind, crowding, anything relevant…"></textarea>
+
+        <label>Photos (optional)</label>
+        <div class="photo-grid" id="photo-grid">
+          <label class="photo-add" for="photo-input">+</label>
+        </div>
+        <input type="file" id="photo-input" accept="image/*" capture="environment" multiple style="display:none;">
+      </div>
+
+      <button class="btn btn-primary" id="btn-save-note">Save Observation</button>
+      <div style="height:8px;"></div>
+    </section>
+
+    <!-- ============ LOG VIEW ============ -->
+    <section class="view" id="view-log">
+      <div class="filter-row" id="filter-row">
+        <div class="filter-chip selected" data-filter="all">All</div>
+        <div class="filter-chip" data-filter="track">Tracks</div>
+        <div class="filter-chip" data-filter="survey">Surveys</div>
+        <div class="filter-chip" data-filter="note">Notes</div>
+      </div>
+      <div class="card" style="padding:4px 18px;">
+        <div id="log-list"></div>
+        <div class="empty-state" id="log-empty" style="display:none;">
+          <div class="glyph">◆</div>
+          <p>Nothing logged yet.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DETAIL VIEW ============ -->
+    <section class="view" id="view-detail">
+      <a class="back-link" id="btn-back-to-log">← Back to log</a>
+      <div class="card" id="detail-content"></div>
+      <button class="btn btn-danger" id="btn-delete-entry">Delete entry</button>
+      <div style="height:8px;"></div>
+    </section>
+
+    <!-- ============ EXPORT VIEW ============ -->
+    <section class="view" id="view-export">
+      <div class="card">
+        <p class="section-label">Overview</p>
+        <div class="stat-row">
+          <div class="stat-box"><div class="num" id="stat-tracks">0</div><div class="lbl">Tracks</div></div>
+          <div class="stat-box"><div class="num" id="stat-surveys">0</div><div class="lbl">Surveys</div></div>
+          <div class="stat-box"><div class="num" id="stat-notes">0</div><div class="lbl">Notes</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <p class="section-label">Export</p>
+        <div class="export-option">
+          <div><div class="label">Surveys — GeoJSON</div><div class="desc">Points, WGS84, thermal category + weather snapshot</div></div>
+          <button class="btn-icon" data-export="survey-geojson">Export</button>
+        </div>
+        <div class="export-option">
+          <div><div class="label">Surveys — CSV</div><div class="desc">Timestamp, lat/lng, category, temp, humidity</div></div>
+          <button class="btn-icon" data-export="survey-csv">Export</button>
+        </div>
+        <div class="export-option">
+          <div><div class="label">Notes — GeoJSON</div><div class="desc">Geotagged observations (photo count only)</div></div>
+          <button class="btn-icon" data-export="note-geojson">Export</button>
+        </div>
+        <div class="export-option">
+          <div><div class="label">Notes — CSV</div><div class="desc">Timestamp, lat/lng, notes text</div></div>
+          <button class="btn-icon" data-export="note-csv">Export</button>
+        </div>
+        <div class="export-option">
+          <div><div class="label">Tracks — GeoJSON</div><div class="desc">LineString per track, WGS84</div></div>
+          <button class="btn-icon" data-export="track-geojson">Export</button>
+        </div>
+        <div class="export-option">
+          <div><div class="label">Tracks — GPX</div><div class="desc">Standard GPS exchange format</div></div>
+          <button class="btn-icon" data-export="track-gpx">Export</button>
+        </div>
+        <div class="export-option">
+          <div><div class="label">Full backup — JSON</div><div class="desc">Everything, incl. photos — for re-import</div></div>
+          <button class="btn-icon" data-export="full-json">Export</button>
+        </div>
+      </div>
+      <div class="card">
+        <p class="section-label">Danger zone</p>
+        <button class="btn btn-danger" id="btn-wipe-all">Erase all data on this device</button>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="bottomnav">
+    <button class="navbtn active" data-view="track"><span class="icon">▲</span><span>Track</span></button>
+    <button class="navbtn" data-view="survey"><span class="icon">◐</span><span>Survey</span></button>
+    <button class="navbtn" data-view="notes"><span class="icon">✎</span><span>Notes</span></button>
+    <button class="navbtn" data-view="log"><span class="icon">☰</span><span>Log</span></button>
+    <button class="navbtn" data-view="export"><span class="icon">⇩</span><span>Export</span></button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

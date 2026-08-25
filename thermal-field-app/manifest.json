@@ -1,0 +1,15 @@
+{
+  "name": "Thermal Field Survey",
+  "short_name": "ThermalField",
+  "description": "GPS track logging, live temperature/humidity, geotagged photo notes, and a 7-point UTCI thermal comfort survey for outdoor field research.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#12161A",
+  "theme_color": "#12161A",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
